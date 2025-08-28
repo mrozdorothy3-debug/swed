@@ -1,0 +1,319 @@
+.cards-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.cards-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-top: 10px;
+}
+
+.cards-header h1 {
+    color: #1a73e8;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+}
+
+.cards-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(280px, 360px);
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.card-item {
+    position: relative;
+    min-height: 112px;
+    border-radius: 16px !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-content {
+    padding: 18px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    color: white;
+}
+
+/* Card gradients */
+.gradient-blue {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #0ea5e9 100%);
+}
+
+/* Ensure gradient overrides MUI Card's default white background */
+.card-item.gradient-blue {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #0ea5e9 100%) !important;
+    background-color: transparent !important;
+}
+
+.gradient-purple {
+    background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
+}
+
+.gradient-mastercard {
+    background: linear-gradient(135deg, #ff5f00 0%, #eb001b 50%, #c00 100%);
+}
+.card-design {
+    position: relative;
+}
+
+.card-decor {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120px 80px at 20% 20%, rgba(255,255,255,0.15), transparent 60%),
+      radial-gradient(100px 60px at 80% 30%, rgba(255,255,255,0.12), transparent 60%),
+      radial-gradient(140px 100px at 50% 100%, rgba(0,0,0,0.08), transparent 60%);
+    pointer-events: none;
+}
+
+.card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.chip {
+    width: 36px;
+    height: 26px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #c9b46b 0%, #7a6a2b 100%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.contactless {
+    display: flex;
+    gap: 3px;
+}
+.contactless span {
+    display: block;
+    width: 4px;
+    height: 10px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.7);
+    transform: skewX(-12deg);
+}
+.contactless span:nth-child(2) { opacity: 0.7; height: 12px; }
+.contactless span:nth-child(3) { opacity: 0.5; height: 14px; }
+
+
+.mastercard-design {
+    position: relative;
+    overflow: hidden;
+}
+
+.mastercard-design::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 95, 0, 0.1) 0%, rgba(235, 0, 27, 0.1) 50%, rgba(204, 0, 0, 0.1) 100%);
+    z-index: 1;
+}
+
+.mastercard-design .card-content {
+    opacity: 1;
+    z-index: 2;
+    position: relative;
+}
+
+.mastercard-logo {
+    position: relative;
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mastercard-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.9;
+}
+
+.mastercard-circle-1 {
+    width: 32px;
+    height: 32px;
+    background: #ff5f00;
+    left: 8px;
+    z-index: 2;
+}
+
+.mastercard-circle-2 {
+    width: 32px;
+    height: 32px;
+    background: #eb001b;
+    right: 8px;
+    z-index: 1;
+}
+
+.blurred-text {
+    filter: blur(6px);
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-type {
+    font-weight: 400 !important;
+    letter-spacing: 1px;
+}
+
+/* Remove frozen chip styles */
+/*
+.frozen-chip {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    backdrop-filter: blur(4px);
+}
+
+.frozen-chip .MuiChip-icon {*/
+/*    color: white !important;
+}*/
+
+.card-number {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.card-number h5 {
+    font-weight: 400 !important;
+    letter-spacing: 2px;
+}
+
+.visibility-toggle {
+    color: white !important;
+    opacity: 0.7;
+    padding: 6px !important;
+    backdrop-filter: blur(0px);
+    z-index: 2;
+}
+
+.visibility-toggle:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(0px);
+}
+
+.card-details {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 8px;
+}
+
+.expiry-date, .card-holder {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-details span {
+    opacity: 0.8;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-details p {
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.card-balance {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-balance span {
+    opacity: 0.8;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-balance h6 {
+    font-size: 1.5rem !important;
+    font-weight: 400 !important;
+}
+
+/* Remove add card styles */
+/*
+.add-card-item {
+    min-height: 200px;
+    border: 2px dashed #e0e0e0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa !important;
+    transition: all 0.3s ease;
+}
+
+.add-card-item:hover {
+    border-color: #1a73e8 !important;
+    background: white !important;
+}
+
+.add-card-button {
+    color: #5f6368 !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+}
+
+.add-card-item:hover .add-card-button {*/
+/*    color: #1a73e8 !important;
+}*/
+
+.cards-actions {
+    text-align: center;
+    padding-bottom: 80px;
+}
+
+.security-note {
+    color: #5f6368;
+    font-size: 0.875rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .cards-container {
+        padding: 16px;
+    }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .cards-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .card-content {
+        padding: 20px;
+    }
+}

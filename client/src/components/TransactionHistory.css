@@ -1,0 +1,99 @@
+.transactions-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 20px;
+}
+
+.transactions-container h1 {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #1a73e8;
+    margin-bottom: 2rem;
+    letter-spacing: 0.5px;
+}
+
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.transaction-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.transaction-date {
+    font-size: 0.875rem;
+    color: #5f6368;
+    font-weight: 400;
+}
+
+.transaction-description {
+    font-size: 1rem;
+    color: #202124;
+    font-weight: 500;
+}
+
+.transaction-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.transaction-amount {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.transaction-amount.credit {
+    color: #34A853;
+}
+
+.transaction-amount.debit {
+    color: #EA4335;
+}
+
+.transaction-account {
+    font-size: 0.875rem;
+    color: #5f6368;
+    font-weight: 400;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .transactions-container {
+        padding: 16px;
+    }
+
+    .transactions-container h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .transaction-description {
+        font-size: 0.9375rem;
+    }
+
+    .transaction-amount {
+        font-size: 1rem;
+    }
+}

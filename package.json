@@ -1,0 +1,18 @@
+{
+  "name": "sweedbit-insurance-website",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm start",
+    "dev:server": "cd server && npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["insurance", "sweedbit", "website", "react", "nodejs"],
+  "author": "Sweedbit Insurance",
+  "license": "ISC",
+  "description": "Sweedbit Insurance company website with customer portal",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

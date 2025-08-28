@@ -1,0 +1,5 @@
+[33mf57f564[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix login redirect to always go to homepage instead of transfer page
+[33m71003d7[m Add notification error dialog and update resolve debt page layout
+[33m95ece8a[m Add scroll-to-top on page navigation and update card details prompt message
+[33m2059611[m Add auto-logout after 10 minutes inactivity and remove password hint
+[33m2c903f5[m Update transfer validation, add login logo, fix card details prompt, and update checking balance
