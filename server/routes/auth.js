@@ -37,13 +37,20 @@ const generateRefreshToken = (user) => {
 // User registration
 router.post('/register', async (req, res) => {
   try {
-    const { firstName, lastName, email, password, phone, dateOfBirth, address } = req.body;
+    const { firstName, lastName, username, email, password, phone, dateOfBirth, address } = req.body;
 
     // Validation
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !username || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'First name, last name, email, and password are required'
+        message: 'First name, last name, username, email, and password are required'
+      });
+    }
+
+    if (username.length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username must be at least 3 characters long'
       });
     }
 
@@ -54,12 +61,13 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    // Check if user already exists by email or username
+    const existingUser = await User.findOne({ $or: [ { email: email.toLowerCase() }, { username: username.toLowerCase() } ] });
     if (existingUser) {
+      const conflictField = existingUser.email === email.toLowerCase() ? 'email' : 'username';
       return res.status(400).json({
         success: false,
-        message: 'User with this email already exists'
+        message: `User with this ${conflictField} already exists`
       });
     }
 
@@ -67,6 +75,7 @@ router.post('/register', async (req, res) => {
     const newUser = new User({
       firstName,
       lastName,
+      username: username.toLowerCase(),
       email: email.toLowerCase(),
       password,
       phone,
@@ -111,34 +120,24 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// User login
+// User login (username-based)
 router.post('/login', async (req, res) => {
   try {
-    const { email, password, identifier } = req.body;
+    const { username, password, identifier, email } = req.body;
 
-    const ident = (identifier || email || '').toString().trim();
-    if (!ident || !password) {
+    // For backward compatibility, fall back to `identifier` then `email`,
+    // but treat the value as a username for lookup.
+    const raw = (username || identifier || email || '').toString().trim();
+    if (!raw || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Identifier and password are required'
+        message: 'Username and password are required'
       });
     }
 
-    // Resolve user by identifier (email, "First Last", or "Admin100")
-    let user = null;
-    if (ident.includes('@')) {
-      user = await User.findOne({ email: ident.toLowerCase() }).select('+password');
-    } else if (/^admin100$/i.test(ident)) {
-      user = await User.findOne({ role: 'admin' }).select('+password');
-    } else {
-      const parts = ident.split(/\s+/);
-      const first = parts[0] || '';
-      const last = parts.slice(1).join(' ') || '';
-      user = await User.findOne({
-        firstName: new RegExp(`^${first}$`, 'i'),
-        lastName: new RegExp(`^${last}$`, 'i'),
-      }).select('+password');
-    }
+    // Case-insensitive username lookup
+    const esc = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await User.findOne({ username: new RegExp(`^${esc}$`, 'i') }).select('+password');
 
     if (!user) {
       return res.status(401).json({
@@ -171,7 +170,7 @@ router.post('/login', async (req, res) => {
       
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Invalid username or password'
       });
     }
 

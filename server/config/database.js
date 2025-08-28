@@ -47,6 +47,7 @@ async function connectDB() {
     try {
       const db = mongoose.connection.db;
       await db.collection('users').createIndex({ email: 1 }, { name: 'email_1', unique: true });
+      await db.collection('users').createIndex({ username: 1 }, { name: 'username_1', unique: true });
       await db.collection('policies').createIndex({ policyNumber: 1 }, { name: 'policyNumber_1', unique: true });
       await db.collection('claims').createIndex({ claimNumber: 1 }, { name: 'claimNumber_1', unique: true });
       console.log('✅ Database indexes ensured');

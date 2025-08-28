@@ -14,6 +14,15 @@ const userSchema = new mongoose.Schema({
     trim: true,
     maxlength: [50, 'Last name cannot exceed 50 characters']
   },
+  // Username used for login
+  username: {
+    type: String,
+    required: [true, 'Username is required'],
+    unique: true,
+    trim: true,
+    lowercase: true,
+    minlength: [3, 'Username must be at least 3 characters']
+  },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -110,6 +119,7 @@ userSchema.virtual('displayName').get(function() {
 
 // Index for better query performance
 userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 
