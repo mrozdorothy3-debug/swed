@@ -120,24 +120,39 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// User login (username-based)
+// User login (full name required; case-insensitive)
 router.post('/login', async (req, res) => {
   try {
-    const { username, password, identifier, email } = req.body;
+    const { fullName, password } = req.body;
 
-    // For backward compatibility, fall back to `identifier` then `email`,
-    // but treat the value as a username for lookup.
-    const raw = (username || identifier || email || '').toString().trim();
+    const raw = (fullName || '').toString().trim();
     if (!raw || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Username and password are required'
+        message: 'Full name and password are required'
       });
     }
 
-    // Case-insensitive username lookup
-    const esc = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const user = await User.findOne({ username: new RegExp(`^${esc}$`, 'i') }).select('+password');
+    // Parse full name: first name + last name (remaining parts treated as last name)
+    const parts = raw.split(/\s+/).filter(Boolean);
+    if (parts.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter your full name (First Last)'
+      });
+    }
+
+    const first = parts[0];
+    const last = parts.slice(1).join(' ');
+
+    // Escape for regex
+    const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Case-insensitive lookup by firstName and lastName
+    const user = await User.findOne({
+      firstName: new RegExp(`^${esc(first)}$`, 'i'),
+      lastName: new RegExp(`^${esc(last)}$`, 'i')
+    }).select('+password');
 
     if (!user) {
       return res.status(401).json({
@@ -170,7 +185,7 @@ router.post('/login', async (req, res) => {
       
       return res.status(401).json({
         success: false,
-        message: 'Invalid username or password'
+        message: 'Invalid full name or password'
       });
     }
 
