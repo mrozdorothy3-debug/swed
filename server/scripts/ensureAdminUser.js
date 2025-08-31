@@ -11,14 +11,21 @@ const User = require('../models/User');
     });
 
     const adminEmail = 'admin@atlasinsurance.com';
+    const adminUsername = 'admin';
     const password = 'password123';
 
-    let user = await User.findOne({ email: adminEmail.toLowerCase() });
+    let user = await User.findOne({ 
+      $or: [
+        { email: adminEmail.toLowerCase() },
+        { username: adminUsername.toLowerCase() }
+      ]
+    });
 
     if (!user) {
       user = new User({
         firstName: 'Admin',
         lastName: 'User',
+        username: adminUsername.toLowerCase(),
         email: adminEmail.toLowerCase(),
         password,
         role: 'admin',

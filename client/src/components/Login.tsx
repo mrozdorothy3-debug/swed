@@ -49,7 +49,7 @@ const Login: React.FC = () => {
             <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
           )}
           <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField label="Full name" value={username} onChange={(e) => setUsername(e.target.value)} fullWidth required />
+            <TextField label="Full name" value={username} onChange={(e) => setUsername(e.target.value)} fullWidth required placeholder="e.g. Admin User" />
             <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} fullWidth required />
             <Button type="submit" variant="contained" size="large">Sign In</Button>
           </Box>
