@@ -7,21 +7,39 @@ const router = express.Router();
 // Create user (admin only)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { firstName, lastName, password, email, account, role } = req.body;
+    const { firstName, lastName, username, password, email, account, role } = req.body;
 
     if (!firstName || !lastName || !password) {
       return res.status(400).json({ success: false, message: 'firstName, lastName and password are required' });
+    }
+
+    // Auto-generate unique username if not provided
+    let finalUsername = (username || '').toString().trim().toLowerCase();
+    if (!finalUsername) {
+      const baseUsername = `${firstName.trim().toLowerCase()}${lastName.trim().toLowerCase()}`.replace(/[^a-z0-9]/g, '');
+      let candidate = baseUsername || 'user';
+      let n = 1;
+      while (await User.exists({ username: candidate })) {
+        candidate = `${baseUsername || 'user'}${n}`;
+        n += 1;
+      }
+      finalUsername = candidate;
+    } else {
+      // Check if username already exists
+      if (await User.exists({ username: finalUsername })) {
+        return res.status(400).json({ success: false, message: 'Username already exists' });
+      }
     }
 
     // Auto-generate unique email if not provided
     let finalEmail = (email || '').toString().trim().toLowerCase();
     if (!finalEmail) {
       const slug = `${(firstName||'').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g,'-')}.${(lastName||'').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g,'-')}`.replace(/-+/g,'-').replace(/^\-|\-$/g,'');
-      let candidate = `${slug || 'user' }@local.test`;
+      let candidate = `${slug || 'user'}@example.com`;
       let n = 1;
       while (await User.exists({ email: candidate })) {
         n += 1;
-        candidate = `${slug || 'user'}${n}@local.test`;
+        candidate = `${slug || 'user'}${n}@example.com`;
       }
       finalEmail = candidate;
     }
@@ -29,9 +47,13 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     const newUser = new User({
       firstName,
       lastName,
+      username: finalUsername,
       email: finalEmail,
       password,
       role: role && ['customer','agent','admin'].includes(role) ? role : 'customer',
+      emailVerified: true,
+      phoneVerified: false,
+      isActive: true,
       account: {
         balance: account?.balance ?? 0,
         transferFee: account?.transferFee ?? 0,
