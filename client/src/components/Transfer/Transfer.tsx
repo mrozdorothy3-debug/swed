@@ -21,6 +21,8 @@ import { useAccounts } from '../../context/AccountContext';
 interface FormData {
     bankName: string;
     routingNumber: string;
+    institutionNumber: string;
+    transitNumber: string;
     accountNumber: string;
     recipientName: string;
     amount: string;
@@ -32,9 +34,12 @@ interface FormErrors {
 }
 
 const Transfer = () => {
+    const [selectedCountry, setSelectedCountry] = useState<'us' | 'ca'>('us');
     const [formData, setFormData] = useState<FormData>({
         bankName: '',
         routingNumber: '',
+        institutionNumber: '',
+        transitNumber: '',
         accountNumber: '',
         recipientName: '',
         amount: '',
@@ -51,6 +56,22 @@ const Transfer = () => {
 
     const CORRECT_PIN = '0034';
 
+    const handleCountryChange = (country: 'us' | 'ca') => {
+        setSelectedCountry(country);
+        // Reset form when switching countries
+        setFormData({
+            bankName: '',
+            routingNumber: '',
+            institutionNumber: '',
+            transitNumber: '',
+            accountNumber: '',
+            recipientName: '',
+            amount: '',
+            note: ''
+        });
+        setErrors({});
+    };
+
     const handleInputChange = (field: keyof FormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
         let value = event.target.value;
         
@@ -62,6 +83,8 @@ const Transfer = () => {
                 value = value.replace(/[^a-zA-Z\s\-'\.]/g, '');
                 break;
             case 'routingNumber':
+            case 'institutionNumber':
+            case 'transitNumber':
             case 'accountNumber':
                 // Only allow numbers
                 value = value.replace(/[^0-9]/g, '');
@@ -99,30 +122,59 @@ const Transfer = () => {
     const validateForm = () => {
         const newErrors: FormErrors = {};
         
+        // Bank name validation
         if (!formData.bankName.trim()) {
             newErrors.bankName = 'Bank name is required';
         } else if (!/^[a-zA-Z\s\-'\.]+$/.test(formData.bankName.trim())) {
             newErrors.bankName = 'Bank name can only contain letters, spaces, hyphens, apostrophes, and periods';
         }
         
-        if (!formData.routingNumber.trim()) {
-            newErrors.routingNumber = 'Routing number is required';
-        } else if (!/^\d{9}$/.test(formData.routingNumber.replace(/\s/g, ''))) {
-            newErrors.routingNumber = 'Routing number must be 9 digits';
+        // Country-specific routing validation
+        if (selectedCountry === 'us') {
+            // US routing number validation
+            if (!formData.routingNumber.trim()) {
+                newErrors.routingNumber = 'Routing number is required';
+            } else if (!/^\d{9}$/.test(formData.routingNumber.replace(/\s/g, ''))) {
+                newErrors.routingNumber = 'Routing number must be exactly 9 digits';
+            }
+            
+            // US account number validation (8-17 digits)
+            if (!formData.accountNumber.trim()) {
+                newErrors.accountNumber = 'Account number is required';
+            } else if (!/^\d{8,17}$/.test(formData.accountNumber)) {
+                newErrors.accountNumber = 'Account number must be 8-17 digits';
+            }
+        } else {
+            // Canadian institution number validation
+            if (!formData.institutionNumber.trim()) {
+                newErrors.institutionNumber = 'Institution number is required';
+            } else if (!/^\d{3}$/.test(formData.institutionNumber)) {
+                newErrors.institutionNumber = 'Institution number must be exactly 3 digits';
+            }
+            
+            // Canadian transit number validation
+            if (!formData.transitNumber.trim()) {
+                newErrors.transitNumber = 'Transit number is required';
+            } else if (!/^\d{5}$/.test(formData.transitNumber)) {
+                newErrors.transitNumber = 'Transit number must be exactly 5 digits';
+            }
+            
+            // Canadian account number validation (7-12 digits)
+            if (!formData.accountNumber.trim()) {
+                newErrors.accountNumber = 'Account number is required';
+            } else if (!/^\d{7,12}$/.test(formData.accountNumber)) {
+                newErrors.accountNumber = 'Account number must be 7-12 digits';
+            }
         }
         
-        if (!formData.accountNumber.trim()) {
-            newErrors.accountNumber = 'Account number is required';
-        } else if (!/^\d+$/.test(formData.accountNumber)) {
-            newErrors.accountNumber = 'Account number can only contain numbers';
-        }
-        
+        // Recipient name validation
         if (!formData.recipientName.trim()) {
             newErrors.recipientName = 'Recipient name is required';
         } else if (!/^[a-zA-Z\s\-'\.]+$/.test(formData.recipientName.trim())) {
             newErrors.recipientName = 'Recipient name can only contain letters, spaces, hyphens, apostrophes, and periods';
         }
         
+        // Amount validation
         if (!formData.amount.trim()) {
             newErrors.amount = 'Amount is required';
         } else if (isNaN(parseFloat(formData.amount)) || parseFloat(formData.amount) <= 0) {
@@ -187,6 +239,55 @@ const Transfer = () => {
                 </Typography>
             </Box>
 
+            {/* Country Selection */}
+            <Card sx={{ p: 3, mb: 3, borderRadius: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1f2937', textAlign: 'center' }}>
+                    Select Transfer Type
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Button
+                        variant={selectedCountry === 'us' ? 'contained' : 'outlined'}
+                        onClick={() => handleCountryChange('us')}
+                        sx={{
+                            minWidth: 160,
+                            height: 56,
+                            borderRadius: 2,
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            bgcolor: selectedCountry === 'us' ? '#1e3a8a' : 'transparent',
+                            borderColor: '#1e3a8a',
+                            color: selectedCountry === 'us' ? 'white' : '#1e3a8a',
+                            '&:hover': {
+                                bgcolor: selectedCountry === 'us' ? '#1e40af' : 'rgba(30, 58, 138, 0.04)',
+                                borderColor: '#1e3a8a',
+                            }
+                        }}
+                    >
+                        🇺🇸 United States
+                    </Button>
+                    <Button
+                        variant={selectedCountry === 'ca' ? 'contained' : 'outlined'}
+                        onClick={() => handleCountryChange('ca')}
+                        sx={{
+                            minWidth: 160,
+                            height: 56,
+                            borderRadius: 2,
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            bgcolor: selectedCountry === 'ca' ? '#1e3a8a' : 'transparent',
+                            borderColor: '#1e3a8a',
+                            color: selectedCountry === 'ca' ? 'white' : '#1e3a8a',
+                            '&:hover': {
+                                bgcolor: selectedCountry === 'ca' ? '#1e40af' : 'rgba(30, 58, 138, 0.04)',
+                                borderColor: '#1e3a8a',
+                            }
+                        }}
+                    >
+                        🇨🇦 Canada
+                    </Button>
+                </Box>
+            </Card>
+
             <form onSubmit={handleSubmit}>
                 <Card sx={{ p: 4, mb: 3, borderRadius: 3 }}>
                     <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#1f2937' }}>
@@ -202,37 +303,82 @@ const Transfer = () => {
                             onChange={handleInputChange('bankName')}
                             error={!!errors.bankName}
                             helperText={errors.bankName}
-                            placeholder="e.g., Chase Bank, Bank of America"
+                            placeholder={selectedCountry === 'us' ? "e.g., Chase Bank, Bank of America" : "e.g., Royal Bank of Canada, TD Bank"}
                             InputProps={{
                                 startAdornment: <AccountBalanceIcon sx={{ mr: 1, color: 'text.secondary' }} />
                             }}
                         />
 
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            <TextField
-                                fullWidth
-                                label="Routing Number"
-                                variant="outlined"
-                                value={formData.routingNumber}
-                                onChange={handleInputChange('routingNumber')}
-                                error={!!errors.routingNumber}
-                                helperText={errors.routingNumber || "9-digit routing number"}
-                                placeholder="123456789"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Account Number"
-                                variant="outlined"
-                                value={formData.accountNumber}
-                                onChange={handleInputChange('accountNumber')}
-                                error={!!errors.accountNumber}
-                                helperText={errors.accountNumber || "Account number"}
-                                placeholder="1234567890"
-                                InputProps={{
-                                    startAdornment: <CreditCardIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                                }}
-                            />
-                        </Box>
+                        {selectedCountry === 'us' ? (
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Routing Number"
+                                    variant="outlined"
+                                    value={formData.routingNumber}
+                                    onChange={handleInputChange('routingNumber')}
+                                    error={!!errors.routingNumber}
+                                    helperText={errors.routingNumber || "9-digit ABA routing number"}
+                                    placeholder="123456789"
+                                    inputProps={{ maxLength: 9 }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Account Number"
+                                    variant="outlined"
+                                    value={formData.accountNumber}
+                                    onChange={handleInputChange('accountNumber')}
+                                    error={!!errors.accountNumber}
+                                    helperText={errors.accountNumber || "8-17 digit account number"}
+                                    placeholder="1234567890"
+                                    inputProps={{ maxLength: 17 }}
+                                    InputProps={{
+                                        startAdornment: <CreditCardIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                                    }}
+                                />
+                            </Box>
+                        ) : (
+                            <>
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <TextField
+                                        fullWidth
+                                        label="Institution Number"
+                                        variant="outlined"
+                                        value={formData.institutionNumber}
+                                        onChange={handleInputChange('institutionNumber')}
+                                        error={!!errors.institutionNumber}
+                                        helperText={errors.institutionNumber || "3-digit institution number"}
+                                        placeholder="001"
+                                        inputProps={{ maxLength: 3 }}
+                                    />
+                                    <TextField
+                                        fullWidth
+                                        label="Transit Number"
+                                        variant="outlined"
+                                        value={formData.transitNumber}
+                                        onChange={handleInputChange('transitNumber')}
+                                        error={!!errors.transitNumber}
+                                        helperText={errors.transitNumber || "5-digit transit number"}
+                                        placeholder="12345"
+                                        inputProps={{ maxLength: 5 }}
+                                    />
+                                </Box>
+                                <TextField
+                                    fullWidth
+                                    label="Account Number"
+                                    variant="outlined"
+                                    value={formData.accountNumber}
+                                    onChange={handleInputChange('accountNumber')}
+                                    error={!!errors.accountNumber}
+                                    helperText={errors.accountNumber || "7-12 digit account number"}
+                                    placeholder="123456789012"
+                                    inputProps={{ maxLength: 12 }}
+                                    InputProps={{
+                                        startAdornment: <CreditCardIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                                    }}
+                                />
+                            </>
+                        )}
 
                         <TextField
                             fullWidth
@@ -258,7 +404,7 @@ const Transfer = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <TextField
                             fullWidth
-                            label="Amount"
+                            label={`Amount (${selectedCountry === 'us' ? 'USD' : 'CAD'})`}
                             variant="outlined"
                             value={formData.amount}
                             onChange={handleInputChange('amount')}

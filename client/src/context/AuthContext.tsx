@@ -128,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         JSON.stringify({ isAuthenticated, username, role, token })
       );
     } catch {}
-  }, [isAuthenticated, username]);
+  }, [isAuthenticated, username, role, token]);
 
   const login = useCallback(async (user: string, password: string) => {
     try {

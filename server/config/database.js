@@ -4,12 +4,14 @@ let mongoServer = null; // only used in dev when using the in-memory server
 
 async function connectDB() {
   const isProd = process.env.NODE_ENV === 'production';
-  const shouldUseMemory = process.env.USE_IN_MEMORY_DB === 'true' || (!process.env.MONGODB_URI && !isProd);
+  const forceMemory = process.env.USE_IN_MEMORY_DB === 'true';
+  const uri = process.env.MONGODB_URI;
 
   try {
-    let uri = process.env.MONGODB_URI;
+    let connectionUri;
 
-    if (shouldUseMemory) {
+    // Only use in-memory if explicitly requested
+    if (forceMemory) {
       // Lazy-require so production deployments don't need this package
       const { MongoMemoryServer } = require('mongodb-memory-server');
 
@@ -23,17 +25,17 @@ async function connectDB() {
       }
 
       mongoServer = await MongoMemoryServer.create(instanceOptions);
-      uri = mongoServer.getUri('sweedbit_insurance');
-      console.log(`🧪 Using in-memory MongoDB at ${uri}`);
+      connectionUri = mongoServer.getUri('sweedbit_insurance');
+      console.log(`🧪 Using in-memory MongoDB at ${connectionUri}`);
+    } else if (uri) {
+      // Use Atlas/external MongoDB
+      connectionUri = uri.replace('mongodb://localhost', 'mongodb://127.0.0.1');
+      console.log(`🌍 Connecting to MongoDB Atlas...`);
     } else {
-      if (!uri) {
-        throw new Error('MONGODB_URI is required in production');
-      }
-      // Prefer 127.0.0.1 over localhost when connecting to local mongod to avoid IPv6 (::1) issues
-      uri = uri.replace('mongodb://localhost', 'mongodb://127.0.0.1');
+      throw new Error('MONGODB_URI is required when not using in-memory DB');
     }
 
-    const conn = await mongoose.connect(uri, {
+    const conn = await mongoose.connect(connectionUri, {
       // Modern Mongoose (v7/8) does not require useNewUrlParser/useUnifiedTopology
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,

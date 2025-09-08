@@ -26,8 +26,8 @@ const AdminPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [balance, setBalance] = useState<number>(0);
-  const [transferFee, setTransferFee] = useState<number>(0);
+  const [balance, setBalance] = useState<string>('');
+  const [transferFee, setTransferFee] = useState<string>('');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -59,15 +59,18 @@ const AdminPage: React.FC = () => {
     
     try {
       // Prepare user data
-      const userData = {
+      const account: { balance?: number; transferFee?: number } = {};
+      if (balance.trim() !== '') account.balance = parseFloat(balance) || 0;
+      if (transferFee.trim() !== '') account.transferFee = parseFloat(transferFee) || 0;
+
+      const userData: any = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        username: username.trim() || undefined,
-        email: email.trim() || undefined,
         password: password,
-        account: { balance: balance || 0, transferFee: transferFee || 0 },
         role: 'customer'
       };
+
+      if (Object.keys(account).length) userData.account = account;
 
       const res = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
@@ -81,7 +84,7 @@ const AdminPage: React.FC = () => {
       }
       
       const result = await res.json();
-      setMessage(`User created successfully! Username: ${result.data.username || result.data.email}`);
+      setMessage(`Customer created successfully! Login: "${result.data.firstName} ${result.data.lastName}" with password.`);
       
       // Clear form
       setFirstName(''); 
@@ -89,8 +92,8 @@ const AdminPage: React.FC = () => {
       setUsername('');
       setEmail('');
       setPassword(''); 
-      setBalance(0); 
-      setTransferFee(0);
+      setBalance(''); 
+      setTransferFee('');
       
       await loadUsers();
     } catch (e: any) {
@@ -158,7 +161,7 @@ const AdminPage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', p: 3, maxWidth: 900, mx: 'auto' }}>
       <Typography variant="h4" sx={{ fontWeight: 800, mb: 2 }}>Admin Console</Typography>
-      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>Create user accounts and manage balances/transfer fees.</Typography>
+      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>Create customer accounts. Users login with their full name (first + last name) and password.</Typography>
 
       {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -167,7 +170,7 @@ const AdminPage: React.FC = () => {
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <PersonAdd sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>Create New User Account</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>Create New Customer Account</Typography>
           </Box>
           
           <Box component="form" onSubmit={onCreate} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -178,6 +181,7 @@ const AdminPage: React.FC = () => {
               onChange={e => setFirstName(e.target.value)} 
               required 
               placeholder="e.g. Stella"
+              helperText="User will login with: First Last (e.g. Stella Carson)"
             />
             <TextField 
               label="Last Name" 
@@ -187,22 +191,6 @@ const AdminPage: React.FC = () => {
               placeholder="e.g. Carson"
             />
             
-            {/* Login Credentials */}
-            <TextField 
-              label="Username (optional)" 
-              value={username} 
-              onChange={e => setUsername(e.target.value)}
-              placeholder="e.g. stella or leave blank for auto-generation"
-              helperText="Leave blank to auto-generate from name"
-            />
-            <TextField 
-              label="Email (optional)" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)}
-              type="email"
-              placeholder="e.g. stella.carson@example.com"
-              helperText="Leave blank to auto-generate"
-            />
             
             <Box sx={{ position: 'relative' }}>
               <TextField 
@@ -229,7 +217,7 @@ const AdminPage: React.FC = () => {
               label="Initial Balance ($)" 
               type="number" 
               value={balance} 
-              onChange={e => setBalance(parseFloat(e.target.value || '0'))} 
+              onChange={e => setBalance(e.target.value)} 
               placeholder="e.g. 183209"
               InputProps={{ inputProps: { min: 0, step: 0.01 } }}
             />
@@ -237,7 +225,7 @@ const AdminPage: React.FC = () => {
               label="Transfer Fee ($)" 
               type="number" 
               value={transferFee} 
-              onChange={e => setTransferFee(parseFloat(e.target.value || '0'))} 
+              onChange={e => setTransferFee(e.target.value)} 
               placeholder="e.g. 3300"
               InputProps={{ inputProps: { min: 0, step: 0.01 } }}
             />

@@ -1,13 +1,71 @@
-// Utility functions for validation
-const validateAccountNumber = (accountNumber) => {
-    // Remove any spaces or dashes
-    const cleaned = accountNumber.replace(/[\s-]/g, '');
-    // Check if it's numeric and between 8-17 digits
-    return /^\d{8,17}$/.test(cleaned);
+// Global country selection
+let selectedCountry = 'us';
+
+// Country selection function
+const selectCountry = (country) => {
+    selectedCountry = country;
+    
+    // Update UI
+    document.querySelectorAll('.country-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[data-country="${country}"]`).classList.add('active');
+    
+    // Update form fields based on country
+    updateFormForCountry(country);
 };
 
-const validateRoutingNumber = (routingNumber) => {
+const updateFormForCountry = (country) => {
+    const isCanadian = country === 'ca';
+    
+    // Update labels and visibility
+    document.getElementById('fromRoutingLabel').textContent = isCanadian ? 'Bank Code' : 'Routing Number';
+    document.getElementById('toRoutingLabel').textContent = isCanadian ? 'Bank Code' : 'Routing Number';
+    
+    // Show/hide Canadian routing fields
+    document.getElementById('fromCanadianRouting').style.display = isCanadian ? 'block' : 'none';
+    document.getElementById('toCanadianRouting').style.display = isCanadian ? 'block' : 'none';
+    
+    // Show/hide US routing fields
+    document.getElementById('fromRouting').style.display = isCanadian ? 'none' : 'block';
+    document.getElementById('toRouting').style.display = isCanadian ? 'none' : 'block';
+    
+    // Update currency symbol and max amounts
+    const amountLabel = document.querySelector('label[for="amount"]');
+    amountLabel.textContent = isCanadian ? 'Amount (CAD $)' : 'Amount (USD $)';
+    
+    // Update account number max length for Canadian format
+    const accountFields = ['fromAccount', 'toAccount'];
+    accountFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        field.maxLength = isCanadian ? 12 : 17;
+        field.placeholder = isCanadian ? '123456789012' : '1234567890123456';
+    });
+    
+    // Clear form when switching countries
+    document.getElementById('transferForm').reset();
+};
+
+// Utility functions for validation
+const validateAccountNumber = (accountNumber, country = selectedCountry) => {
     // Remove any spaces or dashes
+    const cleaned = accountNumber.replace(/[\s-]/g, '');
+    
+    if (country === 'ca') {
+        // Canadian account numbers are typically 7-12 digits
+        return /^\d{7,12}$/.test(cleaned);
+    } else {
+        // US account numbers are typically 8-17 digits
+        return /^\d{8,17}$/.test(cleaned);
+    }
+};
+
+const validateRoutingNumber = (routingNumber, country = selectedCountry) => {
+    if (country === 'ca') {
+        return true; // For Canadian, we validate institution and transit separately
+    }
+    
+    // US ABA routing number validation
     const cleaned = routingNumber.replace(/[\s-]/g, '');
     // Must be exactly 9 digits
     if (!/^\d{9}$/.test(cleaned)) return false;
@@ -21,6 +79,18 @@ const validateRoutingNumber = (routingNumber) => {
         else sum += digit;
     }
     return sum % 10 === 0;
+};
+
+const validateCanadianInstitution = (institutionNumber) => {
+    const cleaned = institutionNumber.replace(/[\s-]/g, '');
+    // Must be exactly 3 digits
+    return /^\d{3}$/.test(cleaned);
+};
+
+const validateCanadianTransit = (transitNumber) => {
+    const cleaned = transitNumber.replace(/[\s-]/g, '');
+    // Must be exactly 5 digits
+    return /^\d{5}$/.test(cleaned);
 };
 
 const validateAmount = (amount) => {
@@ -91,29 +161,62 @@ const handleSubmit = (event) => {
         memo: document.getElementById('memo').value
     };
     
+    // Add Canadian routing data if applicable
+    if (selectedCountry === 'ca') {
+        formData.fromInstitution = document.getElementById('fromInstitution').value;
+        formData.fromTransit = document.getElementById('fromTransit').value;
+        formData.toInstitution = document.getElementById('toInstitution').value;
+        formData.toTransit = document.getElementById('toTransit').value;
+    }
+    
     // Validate all fields
     let hasErrors = false;
     
+    // Account number validation
     if (!validateAccountNumber(formData.fromAccount)) {
-        showError(document.getElementById('fromAccount'), 'Invalid account number');
-        hasErrors = true;
-    }
-    
-    if (!validateRoutingNumber(formData.fromRouting)) {
-        showError(document.getElementById('fromRouting'), 'Invalid routing number');
+        const digits = selectedCountry === 'ca' ? '7-12' : '8-17';
+        showError(document.getElementById('fromAccount'), `Invalid account number (${digits} digits required)`);
         hasErrors = true;
     }
     
     if (!validateAccountNumber(formData.toAccount)) {
-        showError(document.getElementById('toAccount'), 'Invalid account number');
+        const digits = selectedCountry === 'ca' ? '7-12' : '8-17';
+        showError(document.getElementById('toAccount'), `Invalid account number (${digits} digits required)`);
         hasErrors = true;
     }
     
-    if (!validateRoutingNumber(formData.toRouting)) {
-        showError(document.getElementById('toRouting'), 'Invalid routing number');
-        hasErrors = true;
+    // Routing validation based on country
+    if (selectedCountry === 'ca') {
+        // Validate Canadian institution and transit numbers
+        if (!validateCanadianInstitution(formData.fromInstitution)) {
+            showError(document.getElementById('fromInstitution'), 'Invalid institution number (3 digits required)');
+            hasErrors = true;
+        }
+        if (!validateCanadianTransit(formData.fromTransit)) {
+            showError(document.getElementById('fromTransit'), 'Invalid transit number (5 digits required)');
+            hasErrors = true;
+        }
+        if (!validateCanadianInstitution(formData.toInstitution)) {
+            showError(document.getElementById('toInstitution'), 'Invalid institution number (3 digits required)');
+            hasErrors = true;
+        }
+        if (!validateCanadianTransit(formData.toTransit)) {
+            showError(document.getElementById('toTransit'), 'Invalid transit number (5 digits required)');
+            hasErrors = true;
+        }
+    } else {
+        // Validate US routing numbers
+        if (!validateRoutingNumber(formData.fromRouting)) {
+            showError(document.getElementById('fromRouting'), 'Invalid routing number');
+            hasErrors = true;
+        }
+        if (!validateRoutingNumber(formData.toRouting)) {
+            showError(document.getElementById('toRouting'), 'Invalid routing number');
+            hasErrors = true;
+        }
     }
     
+    // Amount validation
     if (!validateAmount(formData.amount)) {
         showError(document.getElementById('amount'), 'Invalid amount');
         hasErrors = true;
@@ -124,8 +227,9 @@ const handleSubmit = (event) => {
     }
     
     // If validation passes, you would typically send this data to your server
-    // For demo purposes, we'll just show an alert
-    alert('Transfer initiated successfully!');
+    const currency = selectedCountry === 'ca' ? 'CAD' : 'USD';
+    const country = selectedCountry === 'ca' ? 'Canada' : 'United States';
+    alert(`${country} ${currency} transfer initiated successfully!`);
     document.getElementById('transferForm').reset();
     return false;
 };

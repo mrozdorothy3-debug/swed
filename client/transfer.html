@@ -10,6 +10,22 @@
     <div class="container">
         <div class="transfer-form">
             <h1>Money Transfer</h1>
+            
+            <!-- Country Selection -->
+            <div class="country-selection">
+                <h2>Select Transfer Type</h2>
+                <div class="country-tabs">
+                    <button type="button" class="country-tab active" data-country="us" onclick="selectCountry('us')">
+                        <span class="flag">🇺🇸</span>
+                        United States
+                    </button>
+                    <button type="button" class="country-tab" data-country="ca" onclick="selectCountry('ca')">
+                        <span class="flag">🇨🇦</span>
+                        Canada
+                    </button>
+                </div>
+            </div>
+            
             <form id="transferForm" onsubmit="return handleSubmit(event)">
                 <div class="form-group">
                     <h2>From Account</h2>
@@ -18,8 +34,20 @@
                         <input type="text" id="fromAccount" name="fromAccount" required maxlength="17">
                     </div>
                     <div class="input-group">
-                        <label for="fromRouting">Routing Number</label>
+                        <label for="fromRouting" id="fromRoutingLabel">Routing Number</label>
                         <input type="text" id="fromRouting" name="fromRouting" required maxlength="9">
+                        <div class="canadian-routing" id="fromCanadianRouting" style="display: none;">
+                            <div class="routing-split">
+                                <div class="routing-part">
+                                    <label for="fromInstitution">Institution Number</label>
+                                    <input type="text" id="fromInstitution" name="fromInstitution" maxlength="3" placeholder="001">
+                                </div>
+                                <div class="routing-part">
+                                    <label for="fromTransit">Transit Number</label>
+                                    <input type="text" id="fromTransit" name="fromTransit" maxlength="5" placeholder="12345">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -30,8 +58,20 @@
                         <input type="text" id="toAccount" name="toAccount" required maxlength="17">
                     </div>
                     <div class="input-group">
-                        <label for="toRouting">Routing Number</label>
+                        <label for="toRouting" id="toRoutingLabel">Routing Number</label>
                         <input type="text" id="toRouting" name="toRouting" required maxlength="9">
+                        <div class="canadian-routing" id="toCanadianRouting" style="display: none;">
+                            <div class="routing-split">
+                                <div class="routing-part">
+                                    <label for="toInstitution">Institution Number</label>
+                                    <input type="text" id="toInstitution" name="toInstitution" maxlength="3" placeholder="001">
+                                </div>
+                                <div class="routing-part">
+                                    <label for="toTransit">Transit Number</label>
+                                    <input type="text" id="toTransit" name="toTransit" maxlength="5" placeholder="12345">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
