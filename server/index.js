@@ -77,6 +77,7 @@ app.use('*', (req, res) => {
   });
 });
 
+
 // Start server
 app.listen(PORT, () => {
   console.log(`\n🚀 Sweedbit Insurance API Server is running on port ${PORT}`);

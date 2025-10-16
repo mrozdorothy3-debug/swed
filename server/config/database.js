@@ -1,4 +1,63 @@
 const mongoose = require('mongoose');
+const User = require('../models/User');
+
+// Function to ensure admin user exists
+async function ensureAdminExists() {
+  try {
+    // Check if admin already exists
+    const existingAdmin = await User.findOne({ username: 'masteradmin' });
+    
+    if (!existingAdmin) {
+      // Create master admin user with strong password
+      const adminUser = await User.create({
+        firstName: 'Master',
+        lastName: 'Admin',
+        username: 'masteradmin',
+        email: 'masteradmin@sweedbit.com',
+        password: 'MasterAdmin2025!', // strong password
+        phone: '+15550001',
+        role: 'admin',
+        isActive: true,
+        emailVerified: true,
+        phoneVerified: true,
+        address: {
+          street: '1 Admin Plaza',
+          city: 'New York',
+          state: 'NY',
+          zipCode: '10001',
+          country: 'United States'
+        },
+        account: {
+          balance: 1000000, 
+          transferFee: 0
+        },
+        preferences: {
+          notifications: {
+            email: true,
+            sms: true,
+            push: true
+          },
+          language: 'en',
+          timezone: 'America/New_York'
+        },
+        security: {
+          twoFactorEnabled: false,
+          loginAttempts: 0
+        }
+      });
+      
+      console.log('\n✅ Master Admin created automatically!');
+      console.log('Full Name: Master Admin'); // This is what you use to login
+      console.log('Password: MasterAdmin2025!');
+      console.log('Email:', adminUser.email);
+      console.log('\n🔑 Login with these credentials to manage users');
+    } else {
+      console.log('\n✅ Master Admin already exists - Login with Full Name: Master Admin');
+    }
+  } catch (error) {
+    console.error('Failed to create admin user:', error.message);
+  }
+}
 
 let mongoServer = null; // only used in dev when using the in-memory server
 
@@ -53,6 +112,9 @@ async function connectDB() {
       await db.collection('policies').createIndex({ policyNumber: 1 }, { name: 'policyNumber_1', unique: true });
       await db.collection('claims').createIndex({ claimNumber: 1 }, { name: 'claimNumber_1', unique: true });
       console.log('✅ Database indexes ensured');
+      
+      // Create default admin user if it doesn't exist
+      await ensureAdminExists();
     } catch (err) {
       const isConflict = err?.codeName === 'IndexOptionsConflict' || err?.code === 85 || /same name|already exists/i.test(err?.message || '');
       if (isConflict) {
