@@ -31,7 +31,7 @@ const User = require('../models/User');
     console.log(`- Status: ${janey.isActive ? 'Active' : 'Inactive'}`);
     
     // Reset password
-    const newPassword = 'Customer123!';
+    const newPassword = '$Blakenship2020';
     janey.password = newPassword;
     await janey.save();
     
