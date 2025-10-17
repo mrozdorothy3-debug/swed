@@ -4,17 +4,25 @@ const User = require('../models/User');
 // Function to ensure admin user exists
 async function ensureAdminExists() {
   try {
+    // Allow override via env vars (for Render)
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'masteradmin';
+    const ADMIN_FIRST = process.env.ADMIN_FIRST || 'Master';
+    const ADMIN_LAST = process.env.ADMIN_LAST || 'Admin';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'masteradmin@sweedbit.com';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'MasterAdmin2025!';
+    const RESET_ADMIN_ON_START = (process.env.RESET_ADMIN_ON_START || 'false').toLowerCase() === 'true';
+
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ username: 'masteradmin' });
-    
-    if (!existingAdmin) {
-      // Create master admin user with strong password
-      const adminUser = await User.create({
-        firstName: 'Master',
-        lastName: 'Admin',
-        username: 'masteradmin',
-        email: 'masteradmin@sweedbit.com',
-        password: 'MasterAdmin2025!', // strong password
+    let admin = await User.findOne({ username: ADMIN_USERNAME }).select('+password');
+
+    if (!admin) {
+      // Create master admin user
+      admin = await User.create({
+        firstName: ADMIN_FIRST,
+        lastName: ADMIN_LAST,
+        username: ADMIN_USERNAME,
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
         phone: '+15550001',
         role: 'admin',
         isActive: true,
@@ -28,34 +36,30 @@ async function ensureAdminExists() {
           country: 'United States'
         },
         account: {
-          balance: 1000000, 
+          balance: 1000000,
           transferFee: 0
         },
         preferences: {
-          notifications: {
-            email: true,
-            sms: true,
-            push: true
-          },
+          notifications: { email: true, sms: true, push: true },
           language: 'en',
           timezone: 'America/New_York'
         },
-        security: {
-          twoFactorEnabled: false,
-          loginAttempts: 0
-        }
+        security: { twoFactorEnabled: false, loginAttempts: 0 }
       });
-      
-      console.log('\n✅ Master Admin created automatically!');
-      console.log('Full Name: Master Admin'); // This is what you use to login
-      console.log('Password: MasterAdmin2025!');
-      console.log('Email:', adminUser.email);
-      console.log('\n🔑 Login with these credentials to manage users');
+      console.log(`\n✅ Admin created automatically: ${ADMIN_FIRST} ${ADMIN_LAST} (username: ${ADMIN_USERNAME})`);
+      console.log(`🔑 Login Full Name: ${ADMIN_FIRST} ${ADMIN_LAST}`);
+      console.log(`🔑 Password: ${ADMIN_PASSWORD}`);
+    } else if (RESET_ADMIN_ON_START) {
+      // Reset password if flag enabled
+      admin.password = ADMIN_PASSWORD;
+      await admin.save();
+      console.log(`\n🔄 Admin password reset for ${ADMIN_FIRST} ${ADMIN_LAST} (username: ${ADMIN_USERNAME})`);
+      console.log(`🔑 New Password: ${ADMIN_PASSWORD}`);
     } else {
-      console.log('\n✅ Master Admin already exists - Login with Full Name: Master Admin');
+      console.log(`\n✅ Admin exists: ${ADMIN_FIRST} ${ADMIN_LAST} (username: ${ADMIN_USERNAME})`);
     }
   } catch (error) {
-    console.error('Failed to create admin user:', error.message);
+    console.error('Failed to ensure admin user:', error.message);
   }
 }
 
